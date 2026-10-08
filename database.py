@@ -91,3 +91,4 @@ def get_saved_trips():
     connection.close()
 
     return trips
+create_database()
