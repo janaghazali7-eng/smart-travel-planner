@@ -5,8 +5,7 @@ from langchain_groq import ChatGroq
 from langchain_classic.agents import AgentExecutor, create_tool_calling_agent
 
 from prompt import travel_prompt
-from database import save_trip
-
+from database import save_trip, create_database
 from tools import (
     search_places,
     search_restaurants,
@@ -64,6 +63,7 @@ def create_trip_plan(
     transport
 ):
     try:
+        create_database()
         result = agent_executor.invoke({
             "destination": destination,
             "days": days,

@@ -1,5 +1,4 @@
 import sqlite3
-
 import os
 
 DATABASE_NAME = os.path.join(
@@ -7,30 +6,26 @@ DATABASE_NAME = os.path.join(
     "travel_planner.db"
 )
 
+
 def get_connection():
     return sqlite3.connect(DATABASE_NAME)
 
 
 def create_database():
-    connection = get_connection()
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS trips (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            destination TEXT NOT NULL,
-            days INTEGER NOT NULL,
-            travelers INTEGER NOT NULL,
-            budget TEXT,
-            interests TEXT,
-            food TEXT,
-            transport TEXT,
-            trip_plan TEXT NOT NULL
-        )
-    """)
-
-    connection.commit()
-    connection.close()
+    with get_connection() as connection:
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS trips (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                destination TEXT NOT NULL,
+                days INTEGER NOT NULL,
+                travelers INTEGER NOT NULL,
+                budget TEXT,
+                interests TEXT,
+                food TEXT,
+                transport TEXT,
+                trip_plan TEXT NOT NULL
+            )
+        """)
 
 
 def save_trip(
@@ -43,11 +38,22 @@ def save_trip(
     transport,
     trip_plan
 ):
-    connection = get_connection()
-    cursor = connection.cursor()
+    create_database()
 
-    cursor.execute("""
-        INSERT INTO trips (
+    with get_connection() as connection:
+        connection.execute("""
+            INSERT INTO trips (
+                destination,
+                days,
+                travelers,
+                budget,
+                interests,
+                food,
+                transport,
+                trip_plan
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
             destination,
             days,
             travelers,
@@ -56,43 +62,30 @@ def save_trip(
             food,
             transport,
             trip_plan
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        destination,
-        days,
-        travelers,
-        budget,
-        interests,
-        food,
-        transport,
-        trip_plan
-    ))
+        ))
 
-    connection.commit()
-    connection.close()
+
 def get_saved_trips():
-    connection = get_connection()
-    cursor = connection.cursor()
+    create_database()
 
-    cursor.execute("""
-        SELECT
-            id,
-            destination,
-            days,
-            travelers,
-            budget,
-            interests,
-            food,
-            transport,
-            trip_plan
-        FROM trips
-        ORDER BY id DESC
-    """)
-
-    trips = cursor.fetchall()
-
-    connection.close()
+    with get_connection() as connection:
+        trips = connection.execute("""
+            SELECT
+                id,
+                destination,
+                days,
+                travelers,
+                budget,
+                interests,
+                food,
+                transport,
+                trip_plan
+            FROM trips
+            ORDER BY id DESC
+        """).fetchall()
 
     return trips
+
+
 create_database()
+
